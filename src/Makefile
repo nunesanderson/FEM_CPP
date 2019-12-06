@@ -1,7 +1,9 @@
 CXX = g++
 CXXFLAGS =-O3 -std=c++11 -march=native
 LDLIBS = -lgsl -lgslcblas
-IDIR =/home/anderson/Anderson/Drive/Study/C++/FEM_C++
+IDIR2 =$(shell pwd)
+IDIR =${shell dirname ${IDIR2}}
+
 
 INCLUDES = ${IDIR}/include  
  
