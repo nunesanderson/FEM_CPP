@@ -30,7 +30,7 @@ Matrix<T>::Matrix(int n, int m)
 template<class T>
 Matrix<T>::Matrix()
 {
-	mat=Matrix_alloc(1,2);
+	mat=Matrix_alloc(0,0);
 	rows=0;
 	cols=0;
 }
