@@ -11,6 +11,8 @@ template <class T>
 T **Matrix<T>::Matrix_alloc(int n, int m)
 {
 	T **mat = new T *[n];
+	if(n==0 or m==0)
+		return mat;
 	mat[0] = new T[n * m];
 
 	for (int i = 1; i < n; i++)
