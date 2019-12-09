@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS =-O3 -std=c++11 -march=native
+CXXFLAGS =-g -std=c++11 -march=native
 LDLIBS = -lgsl -lgslcblas
 IDIR2 =$(shell pwd)
 IDIR =${shell dirname ${IDIR2}}

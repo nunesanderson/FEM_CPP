@@ -1,7 +1,6 @@
-#include<iostream>
-#include<string>
-
-
+#include <iostream>
+#include <string>
+#include <time.h>
 /* ------------------------------------------------------------------------
 Internal includes
 ---------------------------------------------------------------------------*/
@@ -13,26 +12,35 @@ Internal includes
 
 using namespace std;
 
-int main(){
+int main()
+{
+
+    // Reference matrix
+    double one_six = 1.0 / 6.0;
+    double two_three = 2.0 / 3.0;
+
+    Matrix<double> ans(3, 3);
+    ans.mat[0][0] = one_six;
+    ans.mat[0][1] = one_six;
+    ans.mat[0][2] = 0;
+    ans.mat[1][0] = two_three;
+    ans.mat[1][1] = one_six;
+    ans.mat[1][2] = 0;
+    ans.mat[2][0] = one_six;
+    ans.mat[2][1] = two_three;
+    ans.mat[2][2] = 0;
+
+    cout << "It should print:" << endl;
+    ans.print_matrix();
 
 
 
-
-    ShapeFunctions test(1,0,0,0);
-    test.shapeFunction.print_matrix();
-    
-    // shape.GetNodalShapeFunction(1,0,0,0);
-
-
-
-
- 
- 
+    cout << "but it prints:" << endl;
+    GaussLegendrePoints points(9);
+    points.pointsCoordinates.print_matrix();
 
 
     Messages msg;
-    msg.logMessage("Lines: "+std::to_string(test.shapeFunction.rows));
-
 
     return 0;
 }
