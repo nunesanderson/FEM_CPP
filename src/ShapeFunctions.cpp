@@ -204,8 +204,7 @@ GaussLegendrePoints::GaussLegendrePoints(int ElemType)
         break;
 
     case 9: //Second order triangle
-        cout << "**pointsCoordinates.mat in Class constructor: " << **pointsCoordinates.mat << endl;
-        triangleThreePointsInside();
+           triangleThreePointsInside();
         break;
 
     case 11: //Second order tetrahedral
@@ -289,8 +288,6 @@ void GaussLegendrePoints::triangleThreePointsInside()
     ans_weights.mat[0][2] = 1.0 / 6.0;
 
     pointsCoordinates = ans;
-    cout << "**pointsCoordinates.mat in function: " << **pointsCoordinates.mat << endl;
-
     weights = ans_weights;
 }
 
