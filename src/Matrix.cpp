@@ -56,7 +56,7 @@ void Matrix<T>::print_matrix()
 template <class T>
 Matrix<T>::~Matrix()
 {
-	if (rows >= 1)
+	if (rows >= 1 and cols>=1)
 		delete[] mat[0];
 	delete[] mat;
 }
@@ -73,6 +73,10 @@ Matrix<T>::Matrix(const Matrix<T> &b){
 
 template <class T>
 Matrix<T>& Matrix<T>::operator=(Matrix<T> b){
+	if(rows and cols)
+		delete[] this->mat[0];
+	delete[] this->mat;
+
 	this->mat = b.mat;
 	this->rows = b.rows;
 	this->cols = b.cols;
