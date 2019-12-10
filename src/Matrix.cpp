@@ -57,6 +57,7 @@ Matrix<T>::~Matrix()
 {
 	if (rows > 1)
 	{
+		
 		delete[] mat[0];
 		delete[] mat;
 	}
