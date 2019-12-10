@@ -15,6 +15,8 @@ public:
     int cols;
 
     void print_matrix();
+	Matrix(const Matrix&);
+	Matrix& operator=(Matrix);
     ~Matrix();
 };
 
