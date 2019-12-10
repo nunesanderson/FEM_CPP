@@ -204,7 +204,7 @@ GaussLegendrePoints::GaussLegendrePoints(int ElemType)
         break;
 
     case 9: //Second order triangle
-        cout << "**pointsCoordinates.mat in Class constructor: " << **pointsCoordinates.mat << endl;
+        //cout << "**pointsCoordinates.mat in Class constructor: " << **pointsCoordinates.mat << endl;
         triangleThreePointsInside();
         break;
 
