@@ -8,13 +8,15 @@ INCDIR:=include
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -g # -Wall
+CFLAGS := -g -std=c++11 -march=native
 LIB := -lgsl -lgslcblas
 INC := -I include
 
-DEPS := $(OBJS:.o=.d)
-
--include $(DEPS)
+# depend: .depend
+# .depend: $(SOURCES)
+# 	rm -f ./.depend
+# 	$(CC) $(CFLAGS) -MM $^ -MF  ./.depend;
+# include .depend
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
@@ -22,7 +24,7 @@ $(TARGET): $(OBJECTS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
-	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -MMD -c -o $@ $<
+	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
 	@echo " Cleaning..."; 

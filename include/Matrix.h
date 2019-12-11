@@ -17,8 +17,14 @@ public:
     T **mat;
     int rows;
     int cols;
+    
+    void Alloc(int n,int m);
+
+    
+    T detVal;
 
     void print_matrix();
+    void calcDet();
 	Matrix(const Matrix&);
 	Matrix& operator=(Matrix);
     ~Matrix();
