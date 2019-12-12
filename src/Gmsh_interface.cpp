@@ -56,6 +56,7 @@ vector<T> GetMesh::split(string s, string delimiter)
 
 GetMesh::~GetMesh(void)
 {
+    
 }
 GetMesh::GetMesh(string filePath)
 {
@@ -155,6 +156,4 @@ GetMesh::GetMesh(string filePath)
     {
         messages.logMessage("Unable to open this file:" + filePath);
     }
-
-    // nodesCoord.print_matrix();
 }

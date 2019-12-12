@@ -88,7 +88,6 @@ Matrix<T>::Matrix(const Matrix<T> &b)
 template <class T>
 void Matrix<T>::calcDet()
 {
-
 	T ans;
 
 	if (this->rows == this->cols)
@@ -108,6 +107,30 @@ void Matrix<T>::calcDet()
 		throw std::invalid_argument("The number of rows and cols should be the same.");
 	}
 	this->detVal = ans;
+}
+
+template<class T>
+Matrix<T> Matrix<T>::operator*(const Matrix<T>&b){
+
+	int r1 = this->rows;
+	int c1 = this->cols;
+	int r2 = b.rows;
+	int c2 = b.cols;
+
+
+	Matrix<T> result(r1, c2);
+
+	for (int i = 0; i<r1; ++i)
+		for (int j = 0; j<c2; ++j)
+			for (int k = 0; k<c1; ++k)
+			{
+				result.mat[i][j] += this->mat[i][k] * b.mat[k][j];
+			}
+
+	
+	return result;
+
+	
 }
 
 template <class T>

@@ -1,37 +1,64 @@
-CC := g++ # This is the main compiler
-# CC := clang --analyze # and comment out the linker last line for sanity
-SRCDIR := src
+#==============================
+# Compiler
+CC := g++ 
+
+#==============================
+# Build
 BUILDDIR := build
+
+#==============================
+# Build
 TARGET := bin/FEM
-INCDIR:=include
- 
+
+#==============================
+# Source files
 SRCEXT := cpp
+SRCDIR := src
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+
+#==============================
+# Object files
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -g -std=c++11 -march=native
-LIB := -lgsl -lgslcblas
-INC := -I include
 
-# depend: .depend
-# .depend: $(SOURCES)
-# 	rm -f ./.depend
-# 	$(CC) $(CFLAGS) -MM $^ -MF  ./.depend;
-# include .depend
+DEPS := $(OBJECTS:.o=.d)
+#==============================
+# Flags
+# Compiler flags
+CFLAGS = -I${BLAS_INC} -g -std=c++11 -march=native -MMD -MP
 
+# Linker flags
+LDFLAGS = -L${BLAS_LIB} -lgsl -lgslcblas -lopenblas
+
+#==============================
+#Link
 $(TARGET): $(OBJECTS)
-	@echo " Linking..."
-	@echo " $(CC) $^ -o $(TARGET) $(LIB)"; $(CC) $^ -o $(TARGET) $(LIB)
+	@echo "========================================="
+	@echo "Linking"
+	${CXX} $^ -o $(TARGET)  ${LDFLAGS}
 
+# Compile
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@echo " ==========================="
+	@echo " Compiling: $@ $<"
 	@mkdir -p $(BUILDDIR)
-	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
+#==============================
+# Include the dependency files
+-include $(DEPS)
+
+#==============================
+#Clear the directory
 clean:
-	@echo " Cleaning..."; 
-	@echo " $(RM) -rv $(BUILDDIR) $(TARGET)"; $(RM) -rv $(BUILDDIR) $(TARGET)
+	@echo "========================================="
+	@echo " Cleaning"; 
+	$(RM) -rv $(BUILDDIR) $(TARGET)
 
+#==============================
+#Run the binary
 run:
-	@echo " Running..."; 
-	@echo "bash -c bin/FEM" ; bash -c "bin/FEM"
+	@echo "========================================="
+	@echo " Running"; 
+	bash -c "./$(TARGET)"
 
 .PHONY: clean

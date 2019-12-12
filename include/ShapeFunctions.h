@@ -12,6 +12,9 @@ Internal includes
 #define _SHAPE_FUNCTIONS_INCLUDED_
 
 
+
+
+
 class ShapeFunctions
 {
 public:

@@ -11,10 +11,10 @@ Internal includes
 ---------------------------------------------------------------------------*/
 #include "../include/Matrix.h"
 
-
-
 #ifndef _GET_MESH_INCLUDED_
 #define _GET_MESH_INCLUDED_
+
+
 
 class GetMesh {
 private:
@@ -35,5 +35,9 @@ public:
 	~GetMesh();
 
 private:
+
+
+
 };
 #endif
+

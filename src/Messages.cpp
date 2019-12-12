@@ -10,7 +10,7 @@ using std::string;
 /* ------------------------------------------------------------------------
 Internal includes
 ---------------------------------------------------------------------------*/
-#include "Messages.h"
+#include "../include/Messages.h"
 
 void Messages::NotImplementedElement(int elemType, string whereHapp) {
 
