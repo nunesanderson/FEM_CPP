@@ -16,16 +16,229 @@ Internal includes
 #include "Matrix.cpp"
 Messages msg;
 
-ShapeFunctions::~ShapeFunctions() {}
+
+void NodalShapeFunctions::GetGradNodalShapeFunction(int ElemType, double u, double v, double p)
+{
+
+    switch (ElemType)
+    {
+    case 1: //First order line
+        gradNodalLineFirstOrder();
+        break;
+
+    case 2: //First order triangle
+        gradNodalTriangleFirstOrder();
+        break;
+
+    case 4: //First order tetrahedral
+        gradNodalTetrahedralFirstOrder();
+        break;
+
+    case 5: //First order hexahedral
+        gradNodalHexahedralFirstOrder(u, v, p);
+        break;
+
+    case 8: //Second order line
+        gradNodalLineSecondOrder(u);
+        break;
+
+    case 9: //Second order triangle
+        gradNodalTriangleSecondOrder(u, v);
+        break;
+
+    case 11: //Second order tetrahedral
+        gradNodalTetrahedralSecondOrder(u, v, p);
+        break;
+    default:
+        msg.NotImplementedElement(ElemType, "GetGradNodalShapeFunction");
+    }
+}
+
+void NodalShapeFunctions::gradNodalLineFirstOrder()
+{
+    Matrix<double> ans(3, 2);
+
+    ans.mat[0][0] = -0.5;
+    ans.mat[0][1] = 0.5;
+    ans.mat[1][0] = 0.0;
+    ans.mat[1][1] = 0.0;
+    ans.mat[2][0] = 0.0;
+    ans.mat[2][1] = 0.0;
+
+    this->gradShapeFunction = ans;
+}
+
+void NodalShapeFunctions::gradNodalLineSecondOrder(double u)
+{
+    Matrix<double> ans(3, 3);
+    ans.mat[0][0] = (-1.0 + 2.0 * u) / 2.0;
+    ans.mat[0][1] = (1.0 + 2 * u) / 2.0;
+    ans.mat[0][2] = -2 * u;
+    ans.mat[1][0] = 0.0;
+    ans.mat[1][1] = 0.0;
+    ans.mat[1][2] = 0.0;
+    ans.mat[2][0] = 0.0;
+    ans.mat[2][1] = 0.0;
+    ans.mat[2][2] = 0.0;
+
+    this->gradShapeFunction = ans;
+}
+void NodalShapeFunctions::gradNodalTriangleFirstOrder()
+{
+    /*ref:
+	Ida&Bastos, pg 315, table 8.4*/
+
+    Matrix<double> ans(2, 3);
+    ans.mat[0][0] = -1.0;
+    ans.mat[0][1] = 1.0;
+    ans.mat[0][2] = 0.0; //gradNu
+    ans.mat[1][0] = -1.0;
+    ans.mat[1][1] = 0.0;
+    ans.mat[1][2] = 1.0; //gradNv
+
+    this->gradShapeFunction = ans;
+}
+void NodalShapeFunctions::gradNodalTriangleSecondOrder(double u, double v)
+{
+    Matrix<double> ans(3, 6);
+    double t = 1.0 - u - v;
+
+    //gradNu
+    ans.mat[0][0] = 1.0 - 4.0 * t;
+    ans.mat[0][1] = 4.0 * (t - u);
+    ans.mat[0][2] = -1.0 + 4.0 * u;
+    ans.mat[0][3] = 4.0 * v;
+    ans.mat[0][4] = 0.0;
+    ans.mat[0][5] = -4.0 * v;
+
+    //gradNv
+    ans.mat[1][0] = 1.0 - 4.0 * t;
+    ans.mat[1][1] = -4.0 * u;
+    ans.mat[1][2] = 0.0;
+    ans.mat[1][3] = 4.0 * u;
+    ans.mat[1][4] = -1.0 + 4.0 * v;
+    ans.mat[1][5] = 4.0 * (t - v);
+    this->gradShapeFunction = ans;
+}
+void NodalShapeFunctions::gradNodalTetrahedralFirstOrder()
+{
+
+    /*ref:
+	Ida&Bastos, pg 319, table 8.9
+	First order tetrahedral element*/
+
+    Matrix<double> ans(3, 4);
+    ans.mat[0][0] = -1.0;
+    ans.mat[0][1] = 1.0;
+    ans.mat[0][2] = 0.0;
+    ans.mat[0][3] = 0.0;
+    ans.mat[1][0] = -1.0;
+    ans.mat[1][1] = 0.0;
+    ans.mat[1][2] = 1.0;
+    ans.mat[1][3] = 0.0;
+    ans.mat[2][0] = -1.0;
+    ans.mat[2][1] = 0.0;
+    ans.mat[2][2] = 0.0;
+    ans.mat[2][3] = 1.0;
+
+    this->gradShapeFunction = ans;
+}
+void NodalShapeFunctions::gradNodalTetrahedralSecondOrder(double u, double v, double p)
+{
+    Matrix<double> ans(3, 10);
+    double t = 1.0 - u - v - p;
+
+    //gradNu
+    ans.mat[0][0] = 1.0 - 4.0 * t;
+    ans.mat[0][1] = 4.0 * (t - u);
+    ans.mat[0][2] = -1.0 + 4.0 * u;
+    ans.mat[0][3] = 4.0 * v;
+    ans.mat[0][4] = 0.0;
+    ans.mat[0][5] = -4.0 * v;
+    ans.mat[0][6] = -4.0 * p;
+    ans.mat[0][7] = 4.0 * p;
+    ans.mat[0][8] = 0.0;
+    ans.mat[0][9] = 0.0;
+
+    //gradNv
+    ans.mat[1][0] = 1.0 - 4.0 * t;
+    ans.mat[1][1] = -4.0 * u;
+    ans.mat[1][2] = 0.0;
+    ans.mat[1][3] = 4.0 * u;
+    ans.mat[1][4] = -1.0 + 4.0 * v;
+    ans.mat[1][5] = 4.0 * (t - v);
+    ans.mat[1][6] = -4.0 * p;
+    ans.mat[1][7] = 0.0;
+    ans.mat[1][8] = 4.0 * p;
+    ans.mat[1][9] = 0.0;
+
+    //gradNp
+    ans.mat[2][0] = 1.0 - 4.0 * t;
+    ans.mat[2][1] = -4.0 * u;
+    ans.mat[2][2] = 0.0;
+    ans.mat[2][3] = 0.0;
+    ans.mat[2][4] = 0.0;
+    ans.mat[2][5] = -4.0 * v;
+    ans.mat[2][6] = 4.0 * (t - p);
+    ans.mat[2][7] = 4.0 * u;
+    ans.mat[2][8] = 4.0 * v;
+    ans.mat[2][9] = -1.0 + 4.0 * p;
+
+    this->gradShapeFunction = ans;
+}
+void NodalShapeFunctions::gradNodalHexahedralFirstOrder(double u, double v, double p)
+{
+
+    /*ref:
+	Ida&Bastos, pg 319, table 8.9*/
+
+    Matrix<double> ans(3, 8);
+
+    double a1 = 1.0 + u;
+    double a2 = 1.0 - u;
+    double b1 = 1.0 + v;
+    double b2 = 1.0 - v;
+    double c1 = 1.0 + p;
+    double c2 = 1.0 - p;
+    double k = 1.0 / 8.0;
+
+    ans.mat[0][0] = -b2 * c2;
+    ans.mat[0][1] = b2 * c2;
+    ans.mat[0][2] = b1 * c2;
+    ans.mat[0][3] = -b1 * c2;
+    ans.mat[1][0] = -a2 * c2;
+    ans.mat[1][1] = -a1 * c2;
+    ans.mat[1][2] = a1 * c2;
+    ans.mat[1][3] = a2 * c2;
+    ans.mat[2][0] = -a2 * b2;
+    ans.mat[2][1] = -a1 * b2;
+    ans.mat[2][2] = -a1 * b1;
+    ans.mat[2][3] = -a2 * b1;
+
+    ans.mat[0][4] = -b2 * c1;
+    ans.mat[0][5] = b2 * c1;
+    ans.mat[0][6] = b1 * c1;
+    ans.mat[0][7] = -b1 * c1;
+    ans.mat[1][4] = -a2 * c1;
+    ans.mat[1][5] = -a1 * c1;
+    ans.mat[1][6] = a1 * c1;
+    ans.mat[1][7] = a2 * c1;
+    ans.mat[2][4] = a2 * b2;
+    ans.mat[2][5] = a1 * b2;
+    ans.mat[2][6] = a1 * b1;
+    ans.mat[2][7] = a2 * b1;
+
+    this->gradShapeFunction = ans;
+}
+
 /* ------------------------------------------------------------------------
 Nodal shape functions
 [N1 N2...Nn]
 ---------------------------------------------------------------------------*/
-
-ShapeFunctions::ShapeFunctions(int ElemType, double u, double v, double p)
+void NodalShapeFunctions::GetNodalShapeFunctions(int ElemType, double u, double v, double p)
 {
 
-    ElementType = ElemType;
+    this->ElementType = ElemType;
     switch (ElemType)
     {
     case 1: //First order line
@@ -61,7 +274,7 @@ ShapeFunctions::ShapeFunctions(int ElemType, double u, double v, double p)
     }
 }
 
-void ShapeFunctions::nodalLineFirstOrder(double u)
+void NodalShapeFunctions::nodalLineFirstOrder(double u)
 {
     Matrix<double> ans(1, 2);
     ans.mat[0][0] = 0.5 * (1.0 - u);
@@ -74,7 +287,7 @@ Second order line
 0    2    1
 *----*----*
 */
-void ShapeFunctions::nodalLineSecondOrder(double u)
+void NodalShapeFunctions::nodalLineSecondOrder(double u)
 {
     Matrix<double> ans(1, 3);
 
@@ -84,7 +297,7 @@ void ShapeFunctions::nodalLineSecondOrder(double u)
     shapeFunction = ans;
 }
 
-void ShapeFunctions::nodalTriangleFirstOrder(double u, double v)
+void NodalShapeFunctions::nodalTriangleFirstOrder(double u, double v)
 {
     // Ref Ida&Bastos, pg 319, table 8.9
     Matrix<double> ans(1, 3);
@@ -96,7 +309,7 @@ void ShapeFunctions::nodalTriangleFirstOrder(double u, double v)
     shapeFunction = ans;
 }
 
-void ShapeFunctions::nodalTriangleSecondOrder(double u, double v)
+void NodalShapeFunctions::nodalTriangleSecondOrder(double u, double v)
 {
     // Ref Ida&Bastos, pg 316, table 8.5
     Matrix<double> ans(1, 6);
@@ -112,7 +325,7 @@ void ShapeFunctions::nodalTriangleSecondOrder(double u, double v)
     shapeFunction = ans;
 }
 
-void ShapeFunctions::nodalTetrahedralFirstOrder(double u, double v, double p)
+void NodalShapeFunctions::nodalTetrahedralFirstOrder(double u, double v, double p)
 {
     // Ref Ida&Bastos, pg 315, table 8.7
     Matrix<double> ans(1, 4);
@@ -124,7 +337,7 @@ void ShapeFunctions::nodalTetrahedralFirstOrder(double u, double v, double p)
 
     shapeFunction = ans;
 }
-void ShapeFunctions::nodalTetrahedralSecondOrder(double u, double v, double p)
+void NodalShapeFunctions::nodalTetrahedralSecondOrder(double u, double v, double p)
 {
     Matrix<double> ans(1, 10);
     double t = 1.0 - u - v - p;
@@ -142,7 +355,7 @@ void ShapeFunctions::nodalTetrahedralSecondOrder(double u, double v, double p)
 
     shapeFunction = ans;
 }
-void ShapeFunctions::nodalHexahedralFirstOrder(double u, double v, double p)
+void NodalShapeFunctions::nodalHexahedralFirstOrder(double u, double v, double p)
 {
     //Ref Ida&Bastos, pg 321, table 8.12
     Matrix<double> ans(1, 8);
@@ -204,7 +417,7 @@ GaussLegendrePoints::GaussLegendrePoints(int ElemType)
         break;
 
     case 9: //Second order triangle
-           triangleThreePointsInside();
+        triangleThreePointsInside();
         break;
 
     case 11: //Second order tetrahedral

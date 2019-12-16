@@ -3,6 +3,7 @@
 
 class PerformanceTestes
 {
+    
 public:
     void vector_matrix();
     

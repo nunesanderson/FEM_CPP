@@ -56,10 +56,12 @@ vector<T> GetMesh::split(string s, string delimiter)
 
 GetMesh::~GetMesh(void)
 {
-    
 }
 GetMesh::GetMesh(string filePath)
 {
+
+    this->elemTypes1D = {1};
+    this->elemTypes2D = {2};
     string line;
     ifstream myfile(filePath);
     Messages messages;
@@ -80,6 +82,9 @@ GetMesh::GetMesh(string filePath)
     int coordCounter = 0;
     int elemCounter = 0;
 
+    this->numElements1D = 0;
+    this->numElements2D = 0;
+
     if (myfile.is_open())
     {
 
@@ -87,7 +92,7 @@ GetMesh::GetMesh(string filePath)
         {
 
             // Find the Nodes block begining
-            if (line == "$Nodes\r")
+            if (line == "$Nodes")
                 startNodes = lineCounter;
 
             // Allocates the coordinates array
@@ -101,7 +106,7 @@ GetMesh::GetMesh(string filePath)
             if (lineCounter == startNodes + 2 && startNodes > 0)
                 ReadNodes = true;
 
-            if (line == "$EndNodes\r")
+            if (line == "$EndNodes")
                 ReadNodes = false;
 
             // Redas the coordinates
@@ -115,7 +120,7 @@ GetMesh::GetMesh(string filePath)
             }
 
             // Find the Elements block begining
-            if (line == "$Elements\r")
+            if (line == "$Elements")
                 startElem = lineCounter;
 
             // Allocates the arrays
@@ -131,26 +136,35 @@ GetMesh::GetMesh(string filePath)
             if (lineCounter == startElem + 2 && startElem > 0)
                 ReadElem = true;
 
-            if (line == "$EndElements\r")
+            if (line == "$EndElements")
                 ReadElem = false;
 
-            // Redas the coordinates
+            // Reads the coordinates
             if (ReadElem)
             {
                 vector<int> list = this->split<int>(line, delimiter);
                 this->elemTypes.mat[0][elemCounter] = list[1];
                 this->physicalTags.mat[0][elemCounter] = list[3];
                 this->elementaryTags.mat[0][elemCounter] = list[4];
-                this->elemNodes.push_back(std::vector<int>(list.begin(), list.end()));
+                this->elemNodes.push_back(std::vector<int>(list.begin()+5, list.end()));
                 elemCounter++;
+
+                // Obtains the quantity of elements 1,2,3D
+                if (std::find(elemTypes1D.begin(), elemTypes1D.end(), list[1]) != elemTypes1D.end())
+                {
+                    numElements1D++;
+                }
+                else if (std::find(elemTypes2D.begin(), elemTypes2D.end(), list[1]) != elemTypes2D.end())
+                {
+                    numElements2D++;
+                }
             }
 
             lineCounter++;
         }
         myfile.close();
-        this->numElemments=elemCounter;
-        this->numNodes=coordCounter;
-
+        this->numElemments = elemCounter;
+        this->numNodes = coordCounter;
     }
     else
     {
