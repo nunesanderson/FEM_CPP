@@ -35,7 +35,7 @@ void FEM::run()
 {
 
     // Reads the mesh
-    GetMesh mesh(this->mesh_path);
+    GetMesh mesh(this->mesh_path + "/" + this->mesh_file_name);
 
     // Memory allocation for both sides of the equation
     Matrix<double> left_side(mesh.numNodes, mesh.numNodes);
@@ -46,25 +46,23 @@ void FEM::run()
 
     //Shape functions
     NodalShapeFunctions shapeFuntions;
-    // left_side.write2DVectorToFile(mesh.elemNodes,"/home/anderson/Anderson/Drive/1_Study/2_C++/3_FEM_C++/examples/01_Simple_mesh","triangulation");
-    
 
-
+    Matrix<int> physTagsPlot(1, mesh.numElements2D);
     int elemCounterGLobal = mesh.numElements1D;
     for (size_t elemCounter = 0; elemCounter < mesh.numElements2D; elemCounter++)
     {
         int thisPhysID = mesh.physicalTags.mat[0][elemCounterGLobal];
+        physTagsPlot.mat[0][elemCounter] = thisPhysID;
         int posIDlist = getPositionInVector(thisPhysID, this->setup_phys_region_ID);
 
         // Material property
         double matProperty = 1 / (material.mu0 * this->setup_phys_region_perm_rel[posIDlist]);
-        cout<<matProperty<<endl;
 
         // Excitation
         double excitation = this->setup_phys_region_excitation[posIDlist];
 
         //Nodes per element
-        int nodesPerElement = mesh.elemNodes[elemCounterGLobal].size();
+        int nodesPerElement = mesh.elemNodes2D[elemCounter].size();
 
         // TODO: Check dimensions
         int dimensions = 2;
@@ -76,22 +74,22 @@ void FEM::run()
         Matrix<double> coordJac(nodesPerElement, dimensions);
         for (size_t i = 0; i < nodesPerElement; i++)
         {
-            int globalNodeID = mesh.elemNodes[elemCounterGLobal][i] - 1;
+            int globalNodeID = mesh.elemNodes2D[elemCounter][i] - 1;
+
             for (size_t j = 0; j < dimensions; j++)
             {
                 coordJac.mat[i][j] = mesh.nodesCoordinates.mat[globalNodeID][j];
             }
         }
-
-        //GradN Matrix
         shapeFuntions.GetGradNodalShapeFunction(thisElemtype);
+        // shapeFuntions.gradShapeFunction.print_matrix();
 
         // Jacobian calculattion
         Matrix<double> Jac = shapeFuntions.gradShapeFunction * coordJac;
         Jac.calcDet();
         double detJac = Jac.detVal;
-
-        Matrix<double> invJacGradN = Jac.Inverse() * shapeFuntions.gradShapeFunction;
+        Matrix<double> invJac = Jac.Inverse();
+        Matrix<double> invJacGradN = invJac * shapeFuntions.gradShapeFunction;
         Matrix<double> invJacGradNTrans = invJacGradN.Transpose();
 
         Matrix<double> local_left_side(nodesPerElement, nodesPerElement);
@@ -101,6 +99,7 @@ void FEM::run()
 
         // Integral points
         GaussLegendrePoints gaussPoints(thisElemtype);
+        // gaussPoints.pointsCoordinates.print_matrix();
 
         //Left side integration
         for (size_t i = 0; i < gaussPoints.pointsCoordinates.rows; i++)
@@ -113,9 +112,8 @@ void FEM::run()
         {
             for (size_t j = 0; j < nodesPerElement; j++)
             {
-                int this_row = mesh.elemNodes[elemCounterGLobal][i] - 1;
-                int this_col = mesh.elemNodes[elemCounterGLobal][j] - 1;
-
+                int this_row = mesh.elemNodes2D[elemCounter][i] - 1;
+                int this_col = mesh.elemNodes2D[elemCounter][j] - 1;
                 left_side.mat[this_row][this_col] = left_side.mat[this_row][this_col] + local_left_side.mat[i][j];
             }
         }
@@ -130,11 +128,9 @@ void FEM::run()
 
         for (size_t i = 0; i < nodesPerElement; i++)
         {
-             int this_row = mesh.elemNodes[elemCounterGLobal][i] - 1;
-             right_side.mat[0][this_row]=right_side.mat[0][this_row]+local_right_side.mat[0][i];
+            int this_row = mesh.elemNodes2D[elemCounter][i] - 1;
+            right_side.mat[0][this_row] = right_side.mat[0][this_row] + local_right_side.mat[0][i];
         }
-    
-
 
         elemCounterGLobal++;
     }
@@ -157,19 +153,20 @@ void FEM::run()
             double BCVal = this->setup_phys_BC_val[index];
 
             //Apply over the nodes
-            for (size_t j = 0; j < mesh.elemNodes[i].size(); j++)
+            for (size_t j = 0; j < mesh.elemNodes1D[i].size(); j++)
             {
-                int this_node=mesh.elemNodes[i][j]-1;
-                left_side.SetLineValue(this_node,0.0);
-                left_side.mat[this_node][this_node]=1.0;
-                right_side.mat[0][this_node]=BCVal;
+                int this_node = mesh.elemNodes1D[i][j] - 1;
+                left_side.SetLineValue(this_node, 0.0);
+                left_side.mat[this_node][this_node] = 1.0;
+                right_side.mat[0][this_node] = BCVal;
             }
         }
-     }
+    }
 
-    left_side.SolveLinearSystem(left_side,right_side);
-    right_side.writeToFile("/home/anderson/Anderson/Drive/1_Study/2_C++/3_FEM_C++/examples/03_simple_mesh","new_results");
+    left_side.SolveLinearSystem(left_side, right_side);
 
-
-
+    right_side.writeToFile(this->mesh_path, "solution");
+    right_side.write2DVectorToFile(mesh.elemNodes2D, this->mesh_path, "nodes");
+    mesh.nodesCoordinates.writeToFile(this->mesh_path, "points_coord");
+    physTagsPlot.writeToFile(this->mesh_path, "2D_elem_phys_ID");
 }

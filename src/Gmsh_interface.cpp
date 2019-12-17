@@ -146,16 +146,17 @@ GetMesh::GetMesh(string filePath)
                 this->elemTypes.mat[0][elemCounter] = list[1];
                 this->physicalTags.mat[0][elemCounter] = list[3];
                 this->elementaryTags.mat[0][elemCounter] = list[4];
-                this->elemNodes.push_back(std::vector<int>(list.begin()+5, list.end()));
                 elemCounter++;
 
-                // Obtains the quantity of elements 1,2,3D
+                // Check the element dimensions and insert at the corret vector
                 if (std::find(elemTypes1D.begin(), elemTypes1D.end(), list[1]) != elemTypes1D.end())
                 {
+                this->elemNodes1D.push_back(std::vector<int>(list.begin()+5, list.end()));
                     numElements1D++;
                 }
                 else if (std::find(elemTypes2D.begin(), elemTypes2D.end(), list[1]) != elemTypes2D.end())
                 {
+                this->elemNodes2D.push_back(std::vector<int>(list.begin()+5, list.end()));
                     numElements2D++;
                 }
             }

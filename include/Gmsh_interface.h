@@ -34,7 +34,8 @@ public:
     int numElements2D;
     // It uses vector<vector<int>> because the number
     // of nodes may vary in meshes with different elements
-    vector<vector<int>> elemNodes;
+    vector<vector<int>> elemNodes2D;
+    vector<vector<int>> elemNodes1D;
 
     ~GetMesh();
 

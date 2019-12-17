@@ -401,7 +401,7 @@ GaussLegendrePoints::GaussLegendrePoints(int ElemType)
         break;
 
     case 2: //First order triangle
-        triangleFourPointsInside();
+        triangleOnePointsInside();
         break;
 
     case 4: //First order tetrahedral
@@ -469,10 +469,10 @@ void GaussLegendrePoints::triangleOnePointsInside()
     Matrix<double> ans(1, 3);
     ans.mat[0][0] = 1.0 / 3.0;
     ans.mat[0][1] = 1.0 / 3.0;
-    ans.mat[0][2] = 0;
+    ans.mat[0][2] = 0.0;
 
     Matrix<double> ans_weights(1, 1);
-    ans_weights.mat[1][1] = 0.5;
+    ans_weights.mat[0][0] = 0.5;
 
     pointsCoordinates = ans;
     weights = ans_weights;

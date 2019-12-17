@@ -237,35 +237,42 @@ void Matrix<T>::writeToFile(string path, string fileName)
 template <class T>
 void Matrix<T>::SolveLinearSystem(Matrix &lhs, Matrix &rhs)
 {
+	Messages messages;
 
-	// if (lhs.rows == lhs.cols == rhs.cols)
-	// {
-	// }
-	// else
-	// {
-	// 	throw std::invalid_argument("The dimensions of the system do not match: lhs.rows - lhs.cols - rhs.cols: "+to_string(lhs.rows)+"-"+to_string(lhs.cols)+"-"+to_string( rhs.cols));
-	// }
+	if ((lhs.rows == lhs.cols) && (lhs.cols == rhs.cols))
+	{
+		cout << to_string(lhs.rows) << "-" << to_string(lhs.cols) << "-" << to_string(rhs.cols) << endl;
+	}
+
+	else
+	{
+		throw std::invalid_argument("The dimensions of the system do not match: lhs.rows - lhs.cols - rhs.cols: " + to_string(lhs.rows) + "-" + to_string(lhs.cols) + "-" + to_string(rhs.cols));
+	}
 
 	// Ccnvertes the 2D array to 1D array
-	double lhs1D[lhs.rows * lhs.cols];
+	double *lhs1D;
+	lhs1D = new double[lhs.rows * lhs.cols];
 
 	for (size_t i = 0; i < lhs.rows; i++)
 	{
 		for (size_t j = 0; j < lhs.cols; j++)
 		{
-			lhs1D[i * lhs.rows + j] = lhs.mat[i][j];
+			// cout<<i * lhs.cols + j<<endl;
+			lhs1D[i * lhs.cols + j] = lhs.mat[i][j];
 		}
 	}
 
 	double *rhs1D = rhs.mat[0];
 
 	// Lapack
-	const int N = lhs.rows, NRHS = 1, LDA = N, LDB = N;
+	int N = lhs.rows, NRHS = 1, LDA = N, LDB = NRHS;
 	int ipiv[N], info;
-	info = LAPACKE_dgesv(LAPACK_COL_MAJOR, N, NRHS, lhs1D, LDA, ipiv, rhs1D, LDB);
+	
+	info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, N, NRHS, lhs1D, LDA, ipiv, rhs1D, LDB);
 
 	*rhs.mat = rhs1D;
 }
+
 
 template <class T>
 void Matrix<T>::SetLineValue(int line, T value)
@@ -316,6 +323,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &b)
 	int c2 = b.cols;
 
 	Matrix<T> result(r1, c2);
+	result.SetValue(0);
 
 	for (int i = 0; i < r1; ++i)
 		for (int j = 0; j < c2; ++j)

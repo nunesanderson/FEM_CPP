@@ -13,6 +13,7 @@ private:
     int getPositionInVector(int,vector<int> );
 public:
     string mesh_path;
+    string mesh_file_name;
 
     vector<int> setup_phys_region_ID;
     vector<double> setup_phys_region_perm_rel;
