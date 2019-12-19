@@ -9,4 +9,5 @@ Internal includes
 Material_constants::Material_constants()
 {
 this->mu0=4*M_PI*pow(10,-7);
+this->eps0=8.8541878128*pow(10,-12);
 }

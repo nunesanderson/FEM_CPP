@@ -16,18 +16,22 @@ class NodalShapeFunctions
 {
 public:
 	/**
-	Nodal shape functions
-	@param ElemType: element type
-	@param u,v,p: local coordinates
-	@return 2D Matrix
-	[N1 N2...Nn]
+	*Calculates the nodal shape functions
+	*@param ElemType: element type
+	*@param u,v,p: local coordinates
+	*@return 2D Matrix
+	*[N1 N2...Nn]
 	*/
 	void GetNodalShapeFunctions(int ElemType, double u, double v, double p);
+
+	/**
+	 * Access the nodal shape functions values
+	 */ 
 	Matrix<double> shapeFunction;
 	int ElementType;
 
 	/**
-	Gradient of nodal shape functions
+	Calculates the gadient of nodal shape functions
 	@param ElemType: element type
 	@param u,v,p: local coordinates
 	@return 2D Matrix
@@ -36,6 +40,10 @@ public:
 	dN1/dp		dN2/dp	... dNn/dp]
 	*/
 	void GetGradNodalShapeFunction(int ElemType, double u = 0, double v = 0, double p = 0);
+	
+	/**
+	 * Access the gadient of nodal shape functions values
+	 */ 
 	Matrix<double> gradShapeFunction;
 
 
@@ -58,15 +66,7 @@ private:
 	void gradNodalTriangleFirstOrder();
 	void gradNodalTriangleSecondOrder(double u, double v);
 
-	void gradNodalTetrahedralFirstOrder();	/**
-	Gradient of nodal shape functions
-	@param ElemType: element type
-	@param u,v,p: local coordinates
-	@return 2D Matrix
-	[dN1/du		dN2/du	... dNn/du,
-	dN1/dv		dN2/dv	... dNn/dv,
-	dN1/dp		dN2/dp	... dNn/dp]
-	*/
+	void gradNodalTetrahedralFirstOrder();
 	void gradNodalTetrahedralSecondOrder(double u, double v, double p);
 
 	void gradNodalHexahedralFirstOrder(double u, double v, double p);
@@ -76,14 +76,14 @@ class GaussLegendrePoints
 {
 public:
 	/**
-	Gauss points
+	Calculates the Gauss points
 	@param ElemType: element type
 	*/
 	GaussLegendrePoints(int ElemType);
 
 	/**
 	Local coordinates
-	@return 2D Matrix
+	@return Matrix<double> (n,3)
 	[u1	v1 p1,
 	u2	v2 p2,
 	un	vn pn]
@@ -92,12 +92,10 @@ public:
 
 	/**
 	Weight for each point
-	@return 2D Matrix
+	@return Matrix<double>(1,n)
 	[W1 w2 ... Wn]
 	*/
 	Matrix<double> weights;
-
-	int ElementType;
 
 	~GaussLegendrePoints();
 

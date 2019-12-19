@@ -2,7 +2,6 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-
 using namespace std;
 using std::string;
 
@@ -17,27 +16,59 @@ Internal includes
 class GetMesh
 {
 private:
-    template <typename T>
-    vector<T> split(string str, string delimiter);
-    vector<int> elemTypes1D;
-    vector<int> elemTypes2D;
+   template <typename T>
+   vector<T> split(string str, string delimiter);
+   vector<int> elemTypes1D;
+   vector<int> elemTypes2D;
 
 public:
-    GetMesh(string filePath);
-    Matrix<double> nodesCoordinates;
-    Matrix<int> elemTypes;
-    Matrix<int> physicalTags;
-    Matrix<int> elementaryTags;
-    int numElemments;
-    int numNodes;
-    int numElements1D;
-    int numElements2D;
-    // It uses vector<vector<int>> because the number
-    // of nodes may vary in meshes with different elements
-    vector<vector<int>> elemNodes2D;
-    vector<vector<int>> elemNodes1D;
+   /**
+ * Reads the mesh from a .msh file
+ * .msh mesh version is 2.x
+ * 
+ * @param filePath: file path (with name) of the .msh file
+ */
+   GetMesh(string filePath);
 
-    ~GetMesh();
+   /// Access the nodes coordinates
+   Matrix<double> nodesCoordinates;
+
+   /// Access the element types
+   Matrix<int> elemTypes;
+
+   /// Access the physical ID tags
+   Matrix<int> physicalTags;
+
+   ///Access the elementary tags
+   Matrix<int> elementaryTags;
+
+   /// Total number of elements
+   int numElemments;
+
+   ///Access the number of nodes
+   int numNodes;
+   ///Access the number of 1D elements
+   int numElements1D;
+
+   ///Access the number of 2D elements
+   int numElements2D;
+
+   /**
+ * Nodes of each 1D element
+ * It uses vector<vector<int>> because the number
+* of nodes may vary in meshes with different element types
+ */
+   vector<vector<int>> elemNodes2D;
+
+   /**
+ * Nodes of each 2D element
+ * It uses vector<vector<int>> because the number
+* of nodes may vary in meshes with different element types
+ */
+   vector<vector<int>> elemNodes1D;
+
+// TODO: check how to implement the destructor
+   ~GetMesh();
 
 private:
 };

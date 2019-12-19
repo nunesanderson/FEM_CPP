@@ -238,7 +238,6 @@ Nodal shape functions
 void NodalShapeFunctions::GetNodalShapeFunctions(int ElemType, double u, double v, double p)
 {
 
-    this->ElementType = ElemType;
     switch (ElemType)
     {
     case 1: //First order line
@@ -393,7 +392,6 @@ GaussLegendrePoints::~GaussLegendrePoints() {}
 GaussLegendrePoints::GaussLegendrePoints(int ElemType)
 {
 
-    ElementType = ElemType;
     switch (ElemType)
     {
     case 1: //First order line

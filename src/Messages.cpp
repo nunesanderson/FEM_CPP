@@ -19,7 +19,7 @@ void Messages::NotImplementedElement(int elemType, string whereHapp) {
 
 Messages::~Messages() {};
 
-string Messages::logMessage(string message) {
+void Messages::logMessage(string message) {
 	char buff[20];
 	struct tm *sTm;
 
@@ -29,6 +29,5 @@ string Messages::logMessage(string message) {
 	strftime(buff, sizeof(buff), "%H:%M:%S", sTm);
 	cout << "["<< buff << "] " << message<< endl;
 
-	return message;
 
 }

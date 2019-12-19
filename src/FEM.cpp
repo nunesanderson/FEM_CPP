@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-
+#include <time.h>
 using namespace std;
 using std::string;
 
@@ -47,16 +47,44 @@ void FEM::run()
     //Shape functions
     NodalShapeFunctions shapeFuntions;
 
+    // Material property
+    double matVacuumProperty = 1;
+    if (this->formulationName == "magnetostatics")
+    {
+        matVacuumProperty = 1 / material.mu0;
+    }
+    else if (this->formulationName == "electrostatics")
+    {
+        matVacuumProperty = material.eps0;
+    }
+    else
+    {
+        throw std::invalid_argument("Formulation not found.");
+    }
+
+    // Tags to plot different colors
     Matrix<int> physTagsPlot(1, mesh.numElements2D);
+
+    Messages msg;
+
+    // ====================
+    // Integration procedure
+    //  ====================
     int elemCounterGLobal = mesh.numElements1D;
+    time_t start, end;
+    time(&start);
+    msg.logMessage("Integration process");
+
+#pragma omp parallel for default(none) shared(left_side, right_side, shapeFuntions, material, mesh)
     for (size_t elemCounter = 0; elemCounter < mesh.numElements2D; elemCounter++)
     {
         int thisPhysID = mesh.physicalTags.mat[0][elemCounterGLobal];
+
         physTagsPlot.mat[0][elemCounter] = thisPhysID;
         int posIDlist = getPositionInVector(thisPhysID, this->setup_phys_region_ID);
 
         // Material property
-        double matProperty = 1 / (material.mu0 * this->setup_phys_region_perm_rel[posIDlist]);
+        double matProperty = matVacuumProperty * this->setup_phys_region_relative_property[posIDlist];
 
         // Excitation
         double excitation = this->setup_phys_region_excitation[posIDlist];
@@ -70,6 +98,20 @@ void FEM::run()
         //Element type
         int thisElemtype = mesh.elemTypes.mat[0][elemCounterGLobal];
 
+        //Simmetry factor
+        double symFactor = 1.0;
+        if (this->Symmetry == "axisymmetric")
+        {
+            symFactor = 0;
+            for (size_t i = 0; i < nodesPerElement; i++)
+            {
+                int globalNodeID = mesh.elemNodes2D[elemCounter][i] - 1;
+                symFactor = +mesh.nodesCoordinates.mat[globalNodeID][0];
+            }
+            symFactor = symFactor / nodesPerElement;
+            symFactor = 1 / symFactor;
+        }
+
         // Matrix with nodes coordinates
         Matrix<double> coordJac(nodesPerElement, dimensions);
         for (size_t i = 0; i < nodesPerElement; i++)
@@ -82,7 +124,6 @@ void FEM::run()
             }
         }
         shapeFuntions.GetGradNodalShapeFunction(thisElemtype);
-        // shapeFuntions.gradShapeFunction.print_matrix();
 
         // Jacobian calculattion
         Matrix<double> Jac = shapeFuntions.gradShapeFunction * coordJac;
@@ -99,12 +140,12 @@ void FEM::run()
 
         // Integral points
         GaussLegendrePoints gaussPoints(thisElemtype);
-        // gaussPoints.pointsCoordinates.print_matrix();
 
         //Left side integration
+        // [InvJacobian*gradN].T*[InvJacobian*gradN]*det(Jacobian)*Integdudv*prop.material
         for (size_t i = 0; i < gaussPoints.pointsCoordinates.rows; i++)
         {
-            local_left_side = local_left_side + invJacGradNTrans * invJacGradN * detJac * gaussPoints.weights.mat[0][i] * matProperty;
+            local_left_side = local_left_side + invJacGradNTrans * invJacGradN * detJac * gaussPoints.weights.mat[0][i] * matProperty * symFactor;
         }
 
         //Left side assembling
@@ -119,6 +160,7 @@ void FEM::run()
         }
 
         //Right side integration
+        // [N]*Js*Det[Jacbian]*Integdudv
         for (size_t i = 0; i < gaussPoints.pointsCoordinates.rows; i++)
         {
             shapeFuntions.GetNodalShapeFunctions(thisElemtype, gaussPoints.pointsCoordinates.mat[i][0], gaussPoints.pointsCoordinates.mat[i][1], gaussPoints.pointsCoordinates.mat[i][2]);
@@ -135,7 +177,14 @@ void FEM::run()
         elemCounterGLobal++;
     }
 
-    //Boundary conditions
+    time(&end);
+    double dif = difftime(end, start);
+    msg.logMessage("Elasped time is seconds:" + to_string(dif));
+    msg.logMessage("Integration process: Done");
+
+    // ====================
+    // Boundary conditions
+    //  ====================
     for (size_t i = 0; i < mesh.numElements1D; i++)
     {
 
@@ -162,9 +211,14 @@ void FEM::run()
             }
         }
     }
-
+    // ====================
+    // Linear system
+    //  ====================
     left_side.SolveLinearSystem(left_side, right_side);
 
+    // ====================
+    // Post processing
+    //  ====================
     right_side.writeToFile(this->mesh_path, "solution");
     right_side.write2DVectorToFile(mesh.elemNodes2D, this->mesh_path, "nodes");
     mesh.nodesCoordinates.writeToFile(this->mesh_path, "points_coord");

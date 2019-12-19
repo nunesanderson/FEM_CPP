@@ -128,19 +128,6 @@ Matrix<T> Matrix<T>::Transpose()
 			ans.mat[i][j] = this->mat[j][i];
 		}
 	}
-
-	// 	this->Alloc(ans.rows, ans.cols);
-
-	// 	for (size_t i = 0; i < ans.rows; i++)
-	// 	{
-	// 		for (size_t j = 0; j < ans.cols; j++)
-	// 		{
-	// 			this->mat[i][j] = ans.mat[i][j];
-	// 		}
-	// 	}
-
-	// 	this->rows = ans.rows;
-	// 	this->cols = ans.cols;
 	return ans;
 }
 
@@ -212,7 +199,6 @@ void Matrix<T>::writeToFile(string path, string fileName)
 
 	string filePath(path + "/" + fileName + ".txt");
 
-	messages.logMessage(filePath);
 	ofstream myfile;
 	myfile.open(filePath);
 
@@ -237,11 +223,12 @@ void Matrix<T>::writeToFile(string path, string fileName)
 template <class T>
 void Matrix<T>::SolveLinearSystem(Matrix &lhs, Matrix &rhs)
 {
-	Messages messages;
+
+	Messages msg;
+	msg.logMessage("Solving linear system.");
 
 	if ((lhs.rows == lhs.cols) && (lhs.cols == rhs.cols))
 	{
-		cout << to_string(lhs.rows) << "-" << to_string(lhs.cols) << "-" << to_string(rhs.cols) << endl;
 	}
 
 	else
@@ -267,12 +254,12 @@ void Matrix<T>::SolveLinearSystem(Matrix &lhs, Matrix &rhs)
 	// Lapack
 	int N = lhs.rows, NRHS = 1, LDA = N, LDB = NRHS;
 	int ipiv[N], info;
-	
+
 	info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, N, NRHS, lhs1D, LDA, ipiv, rhs1D, LDB);
 
 	*rhs.mat = rhs1D;
+	msg.logMessage("Solving linear system: Done");
 }
-
 
 template <class T>
 void Matrix<T>::SetLineValue(int line, T value)
