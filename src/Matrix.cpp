@@ -341,7 +341,25 @@ Matrix<T> Matrix<T>::operator+(const Matrix<T> &b)
 		throw std::invalid_argument("The dimensions dont match.");
 	}
 }
+template <class T>
+Matrix<T> Matrix<T>::operator-(const Matrix<T> &b)
+{
+	if (this->rows == b.rows && this->cols == b.cols)
+	{
 
+		Matrix<T> result(this->rows, this->cols);
+
+		for (int i = 0; i < this->rows; ++i)
+			for (int j = 0; j < this->cols; ++j)
+				result.mat[i][j] = this->mat[i][j] - b.mat[i][j];
+
+		return result;
+	}
+	else
+	{
+		throw std::invalid_argument("The dimensions dont match.");
+	}
+}
 template <class T>
 Matrix<T> &Matrix<T>::operator=(Matrix<T> b)
 {

@@ -2,7 +2,7 @@
 ///////////////////////////////////////////////////////
 //Dados de entrada
 //Fator de malha
-cl = .002;
+cl = .005;
 
 //Escala
 mm=0.001;
@@ -73,3 +73,5 @@ Physical Surface(30) = {23};
 Physical Surface(31) = {25};
 Physical Surface(32) = {29};
 Physical Surface(33) = {27};
+//+
+Physical Curve(35) = {20, 19, 18, 13, 14, 11, 12, 17, 16, 15, 5, 4, 3};

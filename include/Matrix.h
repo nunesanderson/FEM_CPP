@@ -87,7 +87,7 @@ public:
      * ...
      * @param path: directory
      * @param fileName: file name
-     */ 
+     */
     void writeToFile(string path, string fileName);
 
     /**
@@ -96,19 +96,22 @@ public:
      * @param twoDArrayData: data to write
      * @param path: directory
      * @param fileName: file name
-     */ 
+     */
     void write2DVectorToFile(vector<vector<int>> twoDArrayData, string path, string fileName);
 
     // operator overloading: =Matrix<T>
     Matrix &operator=(Matrix);
 
-    // operator overloading: Matrix<T> *(matmult) Matrix<T> 
+    // operator overloading: Matrix<T> *(matmult) Matrix<T>
     Matrix operator*(const Matrix &);
 
-    // operator overloading: Matrix<T> + Matrix<T> 
+    // operator overloading: Matrix<T> + Matrix<T>
     Matrix operator+(const Matrix &);
 
-    // operator overloading: Matrix<T> * real 
+    // operator overloading: Matrix<T> - Matrix<T>
+    Matrix operator-(const Matrix &);
+
+    // operator overloading: Matrix<T> * real
     Matrix operator*(T const &);
 
     ~Matrix();

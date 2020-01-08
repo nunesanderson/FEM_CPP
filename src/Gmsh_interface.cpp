@@ -20,7 +20,7 @@ Internal includes
 #include "../include/Matrix.h"
 #include "Matrix.cpp"
 template <typename T>
-vector<T> GetMesh::split(string s, string delimiter)
+vector<T> Mesh::split(string s, string delimiter)
 {
 
     vector<T> list;
@@ -54,10 +54,15 @@ vector<T> GetMesh::split(string s, string delimiter)
     return list;
 }
 
-GetMesh::~GetMesh(void)
+Mesh::~Mesh(void)
 {
 }
-GetMesh::GetMesh(string filePath)
+
+Mesh::Mesh()
+{
+}
+
+Mesh::Mesh(string filePath)
 {
 
     this->elemTypes1D = {1};
@@ -151,12 +156,12 @@ GetMesh::GetMesh(string filePath)
                 // Check the element dimensions and insert at the corret vector
                 if (std::find(elemTypes1D.begin(), elemTypes1D.end(), list[1]) != elemTypes1D.end())
                 {
-                this->elemNodes1D.push_back(std::vector<int>(list.begin()+5, list.end()));
+                    this->elemNodes1D.push_back(std::vector<int>(list.begin() + 5, list.end()));
                     numElements1D++;
                 }
                 else if (std::find(elemTypes2D.begin(), elemTypes2D.end(), list[1]) != elemTypes2D.end())
                 {
-                this->elemNodes2D.push_back(std::vector<int>(list.begin()+5, list.end()));
+                    this->elemNodes2D.push_back(std::vector<int>(list.begin() + 5, list.end()));
                     numElements2D++;
                 }
             }
@@ -171,4 +176,21 @@ GetMesh::GetMesh(string filePath)
     {
         messages.logMessage("Unable to open this file:" + filePath);
     }
+}
+Mesh Mesh::operator=(Mesh meshData)
+{
+    this->elementaryTags = meshData.elementaryTags;
+    this->elemNodes1D = meshData.elemNodes1D;
+    this->elemNodes2D = meshData.elemNodes2D;
+    this->elemTypes1D = meshData.elemTypes1D;
+    this->elemTypes2D = meshData.elemTypes2D;
+    this->elemTypes = meshData.elemTypes;
+    this->nodesCoordinates = meshData.nodesCoordinates;
+    this->numElements1D = meshData.numElements1D;
+    this->numElements2D = meshData.numElements2D;
+    this->numElemments = meshData.numElemments;
+    this->numNodes = meshData.numNodes;
+    this->physicalTags = meshData.physicalTags;
+
+    return *this;
 }

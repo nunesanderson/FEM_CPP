@@ -6,7 +6,7 @@ import matplotlib.lines as mlines
 
 def newline(p1, p2):
     ax = plt.gca()
-    l = mlines.Line2D([p1[0],p2[0]], [p1[1],p2[1]],color='k',linewidth=2)
+    l = mlines.Line2D([p1[0],p2[0]], [p1[1],p2[1]],color='k',linewidth=1)
     ax.add_line(l)
     return l
 

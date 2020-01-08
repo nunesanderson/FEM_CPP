@@ -15,6 +15,8 @@ Internal includes
 #include "../include/FEM.h"
 #include "../include/Material_constants.h"
 #include "../include/ShapeFunctions.h"
+#include "../include/PostProcessing.h"
+#include "../include/fileNames.h"
 
 int FEM::getPositionInVector(int i, vector<int> this_vector)
 {
@@ -35,7 +37,7 @@ void FEM::run()
 {
 
     // Reads the mesh
-    GetMesh mesh(this->mesh_path + "/" + this->mesh_file_name);
+    Mesh mesh(this->mesh_path + "/" + this->mesh_file_name);
 
     // Memory allocation for both sides of the equation
     Matrix<double> left_side(mesh.numNodes, mesh.numNodes);
@@ -217,10 +219,14 @@ void FEM::run()
     left_side.SolveLinearSystem(left_side, right_side);
 
     // ====================
-    // Post processing
+    // Write solution files
     //  ====================
-    right_side.writeToFile(this->mesh_path, "solution");
-    right_side.write2DVectorToFile(mesh.elemNodes2D, this->mesh_path, "nodes");
-    mesh.nodesCoordinates.writeToFile(this->mesh_path, "points_coord");
-    physTagsPlot.writeToFile(this->mesh_path, "2D_elem_phys_ID");
+    right_side.writeToFile(this->mesh_path+directoryNameResults, fileNamesolutionResults);
+    right_side.write2DVectorToFile(mesh.elemNodes2D, this->mesh_path+directoryNameResults, fileNameTriangulationFile);
+    right_side.write2DVectorToFile(mesh.elemNodes1D, this->mesh_path+directoryNameResults, fileNameElemNodes1D);
+    mesh.nodesCoordinates.writeToFile(this->mesh_path+directoryNameResults, fileNameNodesCoordinates);
+    physTagsPlot.writeToFile(this->mesh_path+directoryNameResults, fileName2DPhysTags);
+    PostProcessing postProcess(this->mesh_path,mesh_file_name,right_side);
+    postProcess.getGradLine(0.085,0.085,0,0.1,100);
+
 }
