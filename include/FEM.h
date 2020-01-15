@@ -22,11 +22,11 @@ public:
     ///Specify the .msh file path
     string mesh_path;
 
+    ///Dimensions of the problem (1: 1-D...)
+    int dimensions;
+
     //Formulation name
     string formulationName;
-
-    //Symmetry
-    string Symmetry;
 
     /// Specify the .msh file name
     string mesh_file_name;

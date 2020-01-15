@@ -19,31 +19,27 @@ latex_style_times = RcParams({'font.family': 'serif',
 # =============================================================================
 # Reads the data
 # =============================================================================
-file_name="results/line_results.txt"
+file_name="results/solution.txt"
 dir_path = os.path.dirname(os.path.realpath(__file__))
 path=os.path.join(dir_path,file_name)
 results=np.loadtxt(path)
 
-file_name="results/line_coordinates.txt"
+file_name="results/nodes_coordinates.txt"
 dir_path = os.path.dirname(os.path.realpath(__file__))
 path=os.path.join(dir_path,file_name)
 coordinates=np.loadtxt(path)
-
-getdp=np.loadtxt("/home/anderson/Anderson/Drive/1_Study/2_C++/3_FEM_C++/tests_external_programs/01_relay/b_line.dat")
 
 # =============================================================================
 # Plot
 # =============================================================================
 plt.close('all')
-plt.plot(coordinates[:,1], results[:,1],'k',label="Implemented")
-plt.plot(getdp[:,1], getdp[:,3],'b',label="GetDP")  
+plt.plot(coordinates[:,0], results,'k')
 ax.ticklabel_format(style='sci',scilimits=(0,0),axis='both')
 plt.style.use(latex_style_times)
-plt.title('By along the air gap')
-plt.ylabel(r'By [T]')
+plt.title('Voltage along the domain')
+plt.ylabel(r'V')
 plt.xlabel(r'Distance [m]')
 plt.grid(b=True, which='both')
-plt.legend()
 plt.tight_layout()
-plt.savefig("line_plot.pdf")
+plt.savefig("voltage_along_domain.pdf")
 plt.show()

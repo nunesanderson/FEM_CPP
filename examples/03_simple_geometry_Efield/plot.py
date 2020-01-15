@@ -17,30 +17,29 @@ coord=np.loadtxt('results/nodes_coordinates.txt')
 phys_ID=np.loadtxt('results/2D_phys_tags.txt')
 triangulation=np.loadtxt('results/triangulation.txt')
 triangulation1D=np.loadtxt('results/elem_nodes_1D.txt')
-perm=np.loadtxt('results/material_property.txt')
 grad_domain=np.loadtxt('results/grad_domain.txt')
-perm=1/perm
 
 x=coord[:,0]
 y=coord[:,1]
 triangulation=triangulation-1
 cmap = cm.get_cmap(name='jet', lut=None)
-triang = mtri.Triangulation(x, y, triangulation)
+triang = mtri.Triangulation(x, y, triangulation)    
 
-n_levels=15
+n_levels=30
 fig, axs = plt.subplots(nrows=1, ncols=1)
 levels = np.arange(0., max(z),max(z)/n_levels)
 
 #Equipotencial lines
-tcf=axs.tricontour(triang, z,n_levels,levels=levels)
+#tcf=axs.tricontour(triang, z,n_levels,levels=levels)
 
 #Potential distribution
-#tcf=axs.tricontourf(triang, z,n_levels,cmap=cmap)
+tcf=axs.tricontourf(triang, z,n_levels,cmap=cmap)
 
 
-#Mesh
-tcf=plt.tripcolor(triang, 'k-', lw=0.8,facecolors=grad_domain,cmap=cmap)
+#Gradient
+tcf=plt.tripcolor(triang, 'k-',alpha=1, lw=0.8,facecolors=grad_domain,cmap=cmap)
 fig.colorbar(tcf)
+
 #Geometry lines
 triangulation1D=triangulation1D-1
 for k in range(0,len(triangulation1D)):

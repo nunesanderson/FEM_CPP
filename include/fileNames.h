@@ -12,5 +12,7 @@ extern const string fileNameTriangulationFile;
 extern const string fileNameElemNodes1D;
 extern const string fileNameNodesCoordinates;
 extern const string fileName2DPhysTags;
+extern const string fileNameMaterialProperty;
+extern const string fileNameGradDomain;
 
 #endif

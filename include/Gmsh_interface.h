@@ -18,6 +18,7 @@ class Mesh
 private:
   template <typename T>
   vector<T> split(string str, string delimiter);
+  vector<int> elemTypes0D;
   vector<int> elemTypes1D;
   vector<int> elemTypes2D;
 
@@ -50,11 +51,22 @@ public:
 
   ///Access the number of nodes
   int numNodes;
+
   ///Access the number of 1D elements
   int numElements1D;
 
+  ///Access the number of 0D elements
+  int numElements0D;
+
   ///Access the number of 2D elements
   int numElements2D;
+
+  /**
+ * Nodes of each 0D element
+ * It uses vector<vector<int>> because the number
+* of nodes may vary in meshes with different element types
+ */
+  vector<vector<int>> elemNodes0D;
 
   /**
  * Nodes of each 1D element

@@ -64,8 +64,12 @@ Mesh::Mesh()
 
 Mesh::Mesh(string filePath)
 {
-
-    this->elemTypes1D = {1};
+    // 1: 2-node line
+    // 15: 1- node point
+    // 2: 3-node triangle.
+    // 8: 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
+    this->elemTypes0D = {15};
+    this->elemTypes1D = {1, 8};
     this->elemTypes2D = {2};
     string line;
     ifstream myfile(filePath);
@@ -87,6 +91,7 @@ Mesh::Mesh(string filePath)
     int coordCounter = 0;
     int elemCounter = 0;
 
+    this->numElements0D = 0;
     this->numElements1D = 0;
     this->numElements2D = 0;
 
@@ -163,6 +168,11 @@ Mesh::Mesh(string filePath)
                 {
                     this->elemNodes2D.push_back(std::vector<int>(list.begin() + 5, list.end()));
                     numElements2D++;
+                }
+                else if (std::find(elemTypes0D.begin(), elemTypes0D.end(), list[1]) != elemTypes0D.end())
+                {
+                    this->elemNodes0D.push_back(std::vector<int>(list.begin() + 5, list.end()));
+                    numElements0D++;
                 }
             }
 

@@ -29,14 +29,14 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 path=os.path.join(dir_path,file_name)
 coordinates=np.loadtxt(path)
 
-getdp=np.loadtxt("/home/anderson/Anderson/Drive/1_Study/2_C++/3_FEM_C++/tests_external_programs/01_relay/b_line.dat")
+getdp=np.loadtxt("/home/anderson/Anderson/Drive/1_Study/2_C++/3_FEM_C++/tests_external_programs/02_Efield/femm_results.txt")
 
 # =============================================================================
 # Plot
 # =============================================================================
 plt.close('all')
-plt.plot(coordinates[:,1], results[:,1],'k',label="Implemented")
-plt.plot(getdp[:,1], getdp[:,3],'b',label="GetDP")  
+plt.plot(coordinates[:,0], results[:,0],'k',label="Implemented")
+plt.plot(getdp[:,0], getdp[:,1],'b',label="GetDP")  
 ax.ticklabel_format(style='sci',scilimits=(0,0),axis='both')
 plt.style.use(latex_style_times)
 plt.title('By along the air gap')

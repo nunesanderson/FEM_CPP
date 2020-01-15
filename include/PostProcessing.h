@@ -20,6 +20,7 @@ private:
 public:
     PostProcessing(string filesPath, string meshFileName, Matrix<double> &solution);
     Matrix<double> getGradPoint(double x, double y);
+    void getGradDomain();
     void getGradLine(double x_start, double x_end, double y_start, double y_end, int numberPoints);
     // ~PostProcessing();
 };

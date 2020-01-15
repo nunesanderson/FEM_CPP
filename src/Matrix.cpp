@@ -100,11 +100,14 @@ void Matrix<T>::calcDet()
 	{
 		switch (rows)
 		{
+		case 1:
+			ans = this->mat[0][0];
+			break;
 		case 2:
 			ans = this->mat[0][0] * this->mat[1][1] - this->mat[1][0] * this->mat[0][1];
 			break;
 		default:
-			throw std::invalid_argument("Only for 2x2 matrices.");
+			throw std::invalid_argument("Determinant: Dimensions not supported. Received " + to_string(this->rows) + " x " + to_string(this->cols));
 			break;
 		}
 	}
@@ -134,30 +137,41 @@ Matrix<T> Matrix<T>::Transpose()
 template <class T>
 Matrix<T> Matrix<T>::Inverse()
 {
+
 	// TODO: Implement a general interface for LAPACK
-	if (this->rows != 2 || this->cols != 2)
-	{
-		throw std::invalid_argument("Only implemented for 2x2 matrices");
-	}
-
 	Matrix<double> ans(this->rows, this->cols);
-
-	// Calculate the determinant of the matrix
-	double det = this->mat[0][0] * this->mat[1][1] - this->mat[0][1] * this->mat[1][0];
-	double detinv = 1 / det;
-
-	//Calculate the inverse of the matrix
-	ans.mat[0][0] = +detinv * this->mat[1][1];
-	ans.mat[1][0] = -detinv * this->mat[1][0];
-	ans.mat[0][1] = -detinv * this->mat[0][1];
-	ans.mat[1][1] = +detinv * this->mat[0][0];
-	for (size_t i = 0; i < ans.rows; i++)
+	switch (this->rows)
 	{
-		for (size_t j = 0; j < ans.cols; j++)
+	case 1:
+		ans.mat[0][0] = 1.0 / this->mat[0][0];
+		break;
+
+	case 2:
+	{
+		// Calculate the determinant of the matrix
+		double det = this->mat[0][0] * this->mat[1][1] - this->mat[0][1] * this->mat[1][0];
+		double detinv = 1 / det;
+
+		//Calculate the inverse of the matrix
+		ans.mat[0][0] = +detinv * this->mat[1][1];
+		ans.mat[1][0] = -detinv * this->mat[1][0];
+		ans.mat[0][1] = -detinv * this->mat[0][1];
+		ans.mat[1][1] = +detinv * this->mat[0][0];
+		for (size_t i = 0; i < ans.rows; i++)
 		{
-			this->mat[i][j] = ans.mat[i][j];
+			for (size_t j = 0; j < ans.cols; j++)
+			{
+				this->mat[i][j] = ans.mat[i][j];
+			}
 		}
 	}
+	break;
+
+	default:
+		throw std::invalid_argument("Matrix inverse: Dimensions not supported. Received " + to_string(this->rows) + " x " + to_string(this->cols));
+		break;
+	}
+
 	return ans;
 }
 

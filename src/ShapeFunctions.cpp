@@ -16,7 +16,6 @@ Internal includes
 #include "Matrix.cpp"
 Messages msg;
 
-
 void NodalShapeFunctions::GetGradNodalShapeFunction(int ElemType, double u, double v, double p)
 {
 
@@ -56,30 +55,26 @@ void NodalShapeFunctions::GetGradNodalShapeFunction(int ElemType, double u, doub
 
 void NodalShapeFunctions::gradNodalLineFirstOrder()
 {
-    Matrix<double> ans(3, 2);
+    // Source:
+    //Ida_1997 - Electromagnetics and Calculation of Fields
+    //Pg: 314
+    Matrix<double> ans(1, 2);
 
     ans.mat[0][0] = -0.5;
     ans.mat[0][1] = 0.5;
-    ans.mat[1][0] = 0.0;
-    ans.mat[1][1] = 0.0;
-    ans.mat[2][0] = 0.0;
-    ans.mat[2][1] = 0.0;
 
     this->gradShapeFunction = ans;
 }
 
 void NodalShapeFunctions::gradNodalLineSecondOrder(double u)
 {
-    Matrix<double> ans(3, 3);
+    // Source:
+    //Ida_1997 - Electromagnetics and Calculation of Fields
+    //Pg: 314
+    Matrix<double> ans(1, 3);
     ans.mat[0][0] = (-1.0 + 2.0 * u) / 2.0;
     ans.mat[0][1] = (1.0 + 2 * u) / 2.0;
     ans.mat[0][2] = -2 * u;
-    ans.mat[1][0] = 0.0;
-    ans.mat[1][1] = 0.0;
-    ans.mat[1][2] = 0.0;
-    ans.mat[2][0] = 0.0;
-    ans.mat[2][1] = 0.0;
-    ans.mat[2][2] = 0.0;
 
     this->gradShapeFunction = ans;
 }
@@ -275,6 +270,9 @@ void NodalShapeFunctions::GetNodalShapeFunctions(int ElemType, double u, double 
 
 void NodalShapeFunctions::nodalLineFirstOrder(double u)
 {
+    // Source:
+    //Ida_1997 - Electromagnetics and Calculation of Fields
+    //Pg: 314
     Matrix<double> ans(1, 2);
     ans.mat[0][0] = 0.5 * (1.0 - u);
     ans.mat[0][1] = 0.5 * (1.0 + u);
@@ -288,6 +286,9 @@ Second order line
 */
 void NodalShapeFunctions::nodalLineSecondOrder(double u)
 {
+    // Source:
+    //Ida_1997 - Electromagnetics and Calculation of Fields
+    //Pg: 314
     Matrix<double> ans(1, 3);
 
     ans.mat[0][0] = -u * (1.0 - u) / 2.0;

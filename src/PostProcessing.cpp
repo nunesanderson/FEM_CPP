@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <math.h>
 /* ------------------------------------------------------------------------
 Internal includes
 ---------------------------------------------------------------------------*/
@@ -21,8 +22,8 @@ PostProcessing::PostProcessing(string filesPath, string meshFileName, Matrix<dou
 void PostProcessing::getGradLine(double x_start, double x_end, double y_start, double y_end, int numberPoints)
 {
 
-    Matrix<double> pointsCoordinates(numberPoints,2 );
-    Matrix<double> ans(numberPoints,2) ;
+    Matrix<double> pointsCoordinates(numberPoints, 2);
+    Matrix<double> ans(numberPoints, 2);
     double dx = (x_end - x_start) / (numberPoints + 1);
     double dy = (y_end - y_start) / (numberPoints + 1);
     double x = x_start;
@@ -31,7 +32,6 @@ void PostProcessing::getGradLine(double x_start, double x_end, double y_start, d
     {
         pointsCoordinates.mat[i][0] = x;
         pointsCoordinates.mat[i][1] = y;
-        cout<<"x="<<x<<"y="<<y<<endl;
         Matrix<double> thisPointAns = this->getGradPoint(x, y);
         ans.mat[i][0] = thisPointAns.mat[0][0];
         ans.mat[i][1] = thisPointAns.mat[0][1];
@@ -39,9 +39,8 @@ void PostProcessing::getGradLine(double x_start, double x_end, double y_start, d
         x = x + dx;
         y = y + dy;
     }
-
-    pointsCoordinates.writeToFile(this->filePath+directoryNameResults, fileNameLineCoordinates);
-    ans.writeToFile(this->filePath+directoryNameResults, fileNameLineResults);
+    pointsCoordinates.writeToFile(this->filePath + directoryNameResults, fileNameLineCoordinates);
+    ans.writeToFile(this->filePath + directoryNameResults, fileNameLineResults);
 }
 
 Matrix<double> PostProcessing::getGradPoint(double x, double y)
@@ -63,20 +62,6 @@ Matrix<double> PostProcessing::getGradPoint(double x, double y)
 
         //Element type
         int thisElemtype = this->meshData.elemTypes.mat[0][elemCounterGLobal];
-
-        //Simmetry factor
-        double symFactor = 1.0;
-        if (true)
-        {
-            symFactor = 0;
-            for (size_t i = 0; i < nodesPerElement; i++)
-            {
-                int globalNodeID = this->meshData.elemNodes2D[elemCounter][i] - 1;
-                symFactor = +this->meshData.nodesCoordinates.mat[globalNodeID][0];
-            }
-            symFactor = symFactor / nodesPerElement;
-            symFactor = 1 / symFactor;
-        }
 
         // Matrix with nodes coordinates
         Matrix<double> coordJac(nodesPerElement, dimensions);
@@ -122,7 +107,6 @@ Matrix<double> PostProcessing::getGradPoint(double x, double y)
 
         if (thisElement)
         {
-
             // Potentials at the nodes of the elements
             Matrix<double> potentials(nodesPerElement, 1);
             for (size_t i = 0; i < nodesPerElement; i++)
@@ -130,15 +114,68 @@ Matrix<double> PostProcessing::getGradPoint(double x, double y)
                 int nodeID = this->meshData.elemNodes2D[elemCounter][i] - 1;
                 potentials.mat[i][0] = this->solution.mat[0][nodeID];
             }
-            potentials.print_matrix();
-            cout << elemCounterGLobal << endl;
             Matrix<double> invJac2 = Jac.Inverse();
+
             gradPot = invJac2 * shapeFuntions.gradShapeFunction * potentials;
-            gradPot.print_matrix();
         }
 
         elemCounterGLobal++;
     }
 
     return gradPot;
+}
+
+void PostProcessing::getGradDomain()
+{
+    // TODO: Check dimensions
+    int dimensions = 2;
+
+    //Shape functions
+    NodalShapeFunctions shapeFuntions;
+
+    //Matrix with the results
+    Matrix<double> ans(1, this->meshData.numElements2D);
+
+    int elemCounterGLobal = this->meshData.numElements1D;
+    for (size_t elemCounter = 0; elemCounter < this->meshData.numElements2D; elemCounter++)
+    {
+        //Nodes per element
+        int nodesPerElement = this->meshData.elemNodes2D[elemCounter].size();
+
+        //Element type
+        int thisElemtype = this->meshData.elemTypes.mat[0][elemCounterGLobal];
+
+        // Matrix with nodes coordinates
+        Matrix<double> coordJac(nodesPerElement, dimensions);
+        for (size_t i = 0; i < nodesPerElement; i++)
+        {
+            int elemCounterGLobal = this->meshData.numElements1D;
+            int globalNodeID = this->meshData.elemNodes2D[elemCounter][i] - 1;
+
+            for (size_t j = 0; j < dimensions; j++)
+            {
+                coordJac.mat[i][j] = this->meshData.nodesCoordinates.mat[globalNodeID][j];
+            }
+        }
+        shapeFuntions.GetGradNodalShapeFunction(thisElemtype);
+
+        // Jacobian calculattion
+        Matrix<double> Jac = shapeFuntions.gradShapeFunction * coordJac;
+
+        // Potentials at the nodes of the elements
+        Matrix<double> potentials(nodesPerElement, 1);
+        for (size_t i = 0; i < nodesPerElement; i++)
+        {
+            int nodeID = this->meshData.elemNodes2D[elemCounter][i] - 1;
+            potentials.mat[i][0] = this->solution.mat[0][nodeID];
+        }
+        Matrix<double> invJac2 = Jac.Inverse();
+        Matrix<double> gradPot(1, dimensions);
+        gradPot = invJac2 * shapeFuntions.gradShapeFunction * potentials;
+
+        ans.mat[0][elemCounter] = sqrt(pow(gradPot.mat[0][0], 2) + pow(gradPot.mat[0][1], 2));
+
+        elemCounterGLobal++;
+    }
+    ans.writeToFile(this->filePath + directoryNameResults, fileNameGradDomain);
 }

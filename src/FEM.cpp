@@ -43,6 +43,32 @@ void FEM::run()
     Matrix<double> left_side(mesh.numNodes, mesh.numNodes);
     Matrix<double> right_side(1, mesh.numNodes);
 
+    //Sets the variables to be able to run 1,2 and 3-D cases
+    int numElemIntegrate;
+    int elemCounterGLobal;
+    int numElemBC;
+    vector<vector<int>> ElemNodesIntegrate;
+    vector<vector<int>> ElemNodesBC;
+    if (this->dimensions == 1)
+    {
+        numElemBC = mesh.numElements0D;
+        numElemIntegrate = mesh.numElements1D;
+        ElemNodesIntegrate = mesh.elemNodes1D;
+        ElemNodesBC = mesh.elemNodes0D;
+        elemCounterGLobal = mesh.numElements0D;
+    }
+    else if (this->dimensions == 2)
+    {
+        numElemBC = mesh.numElements1D;
+        ElemNodesBC = mesh.elemNodes1D;
+        numElemIntegrate = mesh.numElements2D;
+        ElemNodesIntegrate = mesh.elemNodes2D;
+        elemCounterGLobal = mesh.numElements1D;
+    }
+
+    //Array to save the material properties
+    Matrix<double> materialPropertyPerElem(1, numElemIntegrate);
+
     // Material constants
     Material_constants material;
 
@@ -65,21 +91,21 @@ void FEM::run()
     }
 
     // Tags to plot different colors
-    Matrix<int> physTagsPlot(1, mesh.numElements2D);
+    Matrix<int> physTagsPlot(1, numElemIntegrate);
 
     Messages msg;
 
     // ====================
     // Integration procedure
     //  ====================
-    int elemCounterGLobal = mesh.numElements1D;
     time_t start, end;
     time(&start);
     msg.logMessage("Integration process");
 
-#pragma omp parallel for default(none) shared(left_side, right_side, shapeFuntions, material, mesh)
-    for (size_t elemCounter = 0; elemCounter < mesh.numElements2D; elemCounter++)
+#pragma omp parallel for default(none) shared(left_side, elemCounterGLobal, right_side, shapeFuntions, material, mesh, materialPropertyPerElem, numElemIntegrate, elemCounterGLobal, numElemBC, ElemNodesIntegrate, ElemNodesBC)
+    for (size_t elemCounter = 0; elemCounter < numElemIntegrate; elemCounter++)
     {
+
         int thisPhysID = mesh.physicalTags.mat[0][elemCounterGLobal];
 
         physTagsPlot.mat[0][elemCounter] = thisPhysID;
@@ -87,38 +113,25 @@ void FEM::run()
 
         // Material property
         double matProperty = matVacuumProperty * this->setup_phys_region_relative_property[posIDlist];
+        materialPropertyPerElem.mat[0][elemCounter] = matProperty;
 
         // Excitation
         double excitation = this->setup_phys_region_excitation[posIDlist];
 
         //Nodes per element
-        int nodesPerElement = mesh.elemNodes2D[elemCounter].size();
+        int nodesPerElement = ElemNodesIntegrate[elemCounter].size();
 
         // TODO: Check dimensions
-        int dimensions = 2;
+        int dimensions = this->dimensions;
 
         //Element type
         int thisElemtype = mesh.elemTypes.mat[0][elemCounterGLobal];
-
-        //Simmetry factor
-        double symFactor = 1.0;
-        if (this->Symmetry == "axisymmetric")
-        {
-            symFactor = 0;
-            for (size_t i = 0; i < nodesPerElement; i++)
-            {
-                int globalNodeID = mesh.elemNodes2D[elemCounter][i] - 1;
-                symFactor = +mesh.nodesCoordinates.mat[globalNodeID][0];
-            }
-            symFactor = symFactor / nodesPerElement;
-            symFactor = 1 / symFactor;
-        }
 
         // Matrix with nodes coordinates
         Matrix<double> coordJac(nodesPerElement, dimensions);
         for (size_t i = 0; i < nodesPerElement; i++)
         {
-            int globalNodeID = mesh.elemNodes2D[elemCounter][i] - 1;
+            int globalNodeID = ElemNodesIntegrate[elemCounter][i] - 1;
 
             for (size_t j = 0; j < dimensions; j++)
             {
@@ -147,7 +160,7 @@ void FEM::run()
         // [InvJacobian*gradN].T*[InvJacobian*gradN]*det(Jacobian)*Integdudv*prop.material
         for (size_t i = 0; i < gaussPoints.pointsCoordinates.rows; i++)
         {
-            local_left_side = local_left_side + invJacGradNTrans * invJacGradN * detJac * gaussPoints.weights.mat[0][i] * matProperty * symFactor;
+            local_left_side = local_left_side + invJacGradNTrans * invJacGradN * detJac * gaussPoints.weights.mat[0][i] * matProperty;
         }
 
         //Left side assembling
@@ -155,8 +168,8 @@ void FEM::run()
         {
             for (size_t j = 0; j < nodesPerElement; j++)
             {
-                int this_row = mesh.elemNodes2D[elemCounter][i] - 1;
-                int this_col = mesh.elemNodes2D[elemCounter][j] - 1;
+                int this_row = ElemNodesIntegrate[elemCounter][i] - 1;
+                int this_col = ElemNodesIntegrate[elemCounter][j] - 1;
                 left_side.mat[this_row][this_col] = left_side.mat[this_row][this_col] + local_left_side.mat[i][j];
             }
         }
@@ -172,7 +185,7 @@ void FEM::run()
 
         for (size_t i = 0; i < nodesPerElement; i++)
         {
-            int this_row = mesh.elemNodes2D[elemCounter][i] - 1;
+            int this_row = ElemNodesIntegrate[elemCounter][i] - 1;
             right_side.mat[0][this_row] = right_side.mat[0][this_row] + local_right_side.mat[0][i];
         }
 
@@ -187,7 +200,7 @@ void FEM::run()
     // ====================
     // Boundary conditions
     //  ====================
-    for (size_t i = 0; i < mesh.numElements1D; i++)
+    for (size_t i = 0; i < numElemBC; i++)
     {
 
         // Get the physical ID of each BC element
@@ -204,9 +217,9 @@ void FEM::run()
             double BCVal = this->setup_phys_BC_val[index];
 
             //Apply over the nodes
-            for (size_t j = 0; j < mesh.elemNodes1D[i].size(); j++)
+            for (size_t j = 0; j < ElemNodesBC[i].size(); j++)
             {
-                int this_node = mesh.elemNodes1D[i][j] - 1;
+                int this_node = ElemNodesBC[i][j] - 1;
                 left_side.SetLineValue(this_node, 0.0);
                 left_side.mat[this_node][this_node] = 1.0;
                 right_side.mat[0][this_node] = BCVal;
@@ -221,12 +234,13 @@ void FEM::run()
     // ====================
     // Write solution files
     //  ====================
-    right_side.writeToFile(this->mesh_path+directoryNameResults, fileNamesolutionResults);
-    right_side.write2DVectorToFile(mesh.elemNodes2D, this->mesh_path+directoryNameResults, fileNameTriangulationFile);
-    right_side.write2DVectorToFile(mesh.elemNodes1D, this->mesh_path+directoryNameResults, fileNameElemNodes1D);
-    mesh.nodesCoordinates.writeToFile(this->mesh_path+directoryNameResults, fileNameNodesCoordinates);
-    physTagsPlot.writeToFile(this->mesh_path+directoryNameResults, fileName2DPhysTags);
-    PostProcessing postProcess(this->mesh_path,mesh_file_name,right_side);
-    postProcess.getGradLine(0.085,0.085,0,0.1,100);
-
+    right_side.writeToFile(this->mesh_path + directoryNameResults, fileNamesolutionResults);
+    right_side.write2DVectorToFile(mesh.elemNodes2D, this->mesh_path + directoryNameResults, fileNameTriangulationFile);
+    right_side.write2DVectorToFile(mesh.elemNodes1D, this->mesh_path + directoryNameResults, fileNameElemNodes1D);
+    mesh.nodesCoordinates.writeToFile(this->mesh_path + directoryNameResults, fileNameNodesCoordinates);
+    physTagsPlot.writeToFile(this->mesh_path + directoryNameResults, fileName2DPhysTags);
+    materialPropertyPerElem.writeToFile(this->mesh_path + directoryNameResults, fileNameMaterialProperty);
+    PostProcessing postProcess(this->mesh_path, mesh_file_name, right_side);
+    postProcess.getGradLine(0.085, 0.085, 0, 0.1, 100);
+    postProcess.getGradDomain();
 }
